@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Pacientes en Emergencias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+     <style>
+        :root {
+            --leve: #4CAF50;
+            --moderado: #FFC107;
+            --urgente: #FF9800;
+            --critico: #F44336;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: #3f51b5;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+        }
+        
+        .btn-primary:hover {
+            background-color: #303f9f;
+        }
+        
+        .gravedad-critico {
+            background-color: var(--critico);
+            color: white;
+        }
+        
+        .gravedad-urgente {
+            background-color: var(--urgente);
+            color: white;
+        }
+        
+        .gravedad-moderado {
+            background-color: var(--moderado);
+        }
+        
+        .gravedad-leve {
+            background-color: var(--leve);
+            color: white;
+        }
+        
+        .badge-critico {
+            background-color: var(--critico);
+        }
+        
+        .badge-urgente {
+            background-color: var(--urgente);
+        }
+        
+        .badge-moderado {
+            background-color: var(--moderado);
+        }
+        
+        .badge-leve {
+            background-color: var(--leve);
+        }
+        
+        .paciente-critico {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid var(--critico);
+        }
+        
+        .paciente-urgente {
+            background-color: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid var(--urgente);
+        }
+        
+        .paciente-moderado {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid var(--moderado);
+        }
+        
+        .paciente-leve {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--leve);
+        }
+        
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+        
+        .floating-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            from { right: -100%; }
+            to { right: 20px; }
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .stats-card .count {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stats-card .label {
+            font-size: 1rem;
+        }
+    </style>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-hospital me-2"></i>Emergencias Médicas
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-home me-1"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user me-1"></i> Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Form (hidden by default) -->
+    <div class="container login-container" id="loginContainer">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión</h4>
+            </div>
+            <div class="card-body">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="loginEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                        <div class="form-text">La contraseña debe tener al menos 8 caracteres</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                </form>
+                <div class="mt-3 text-center">
+                    <a href="#" id="showRegister">¿No tienes cuenta? Regístrate</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Form (hidden by default) -->
+    <div class="container login-container" id="registerContainer" style="display: none;">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Registro de Usuario</h4>
+            </div>
+            <div class="card-body">
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label for="registerName" class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-control" id="registerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerEmail" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="registerEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="registerPassword" required>
+                        <div class="form-text">La contraseña debe tener al menos 8 caracteres</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerConfirmPassword" class="form-label">Confirmar Contraseña</label>
+                        <input type="password" class="form-control" id="registerConfirmPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+                </form>
+                <div class="mt-3 text-center">
+                    <a href="#" id="showLogin">¿Ya tienes cuenta? Inicia sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (hidden by default) -->
+    <div class="container py-4" id="mainContent" style="display: none;">
+        <!-- Alert for critical patients -->
+        <div class="alert alert-danger floating-alert" id="criticalAlert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>¡Paciente Crítico Registrado!</strong> Se ha registrado un paciente en estado crítico.
+        </div>
+
+        <h2 class="text-center mb-4"><i class="fas fa-user-injured me-2"></i> Registro de Pacientes en Emergencias</h2>
+        
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card bg-primary">
+                    <i class="fas fa-procedures"></i>
+                    <div class="count" id="totalPatients">0</div>
+                    <div class="label">Pacientes Totales</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card gravedad-critico">
+                    <i class="fas fa-heartbeat"></i>
+                    <div class="count" id="criticalPatients">0</div>
+                    <div class="label">Críticos</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card gravedad-urgente">
+                    <i class="fas fa-ambulance"></i>
+                    <div class="count" id="urgentPatients">0</div>
+                    <div class="label">Urgentes</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card gravedad-leve">
+                    <i class="fas fa-smile"></i>
+                    <div class="count" id="mildPatients">0</div>
+                    <div class="label">Leves</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Patient Registration Form -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Formulario de Registro</h4>
+            </div>
+            <div class="card-body">
+                <form id="patientForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                            <div class="invalid-feedback">Por favor ingrese el nombre completo</div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="edad" class="form-label">Edad</label>
+                            <input type="number" class="form-control" id="edad" min="0" required>
+                            <div class="invalid-feedback">La edad debe ser mayor a 0</div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="genero" class="form-label">Género</label>
+                            <select class="form-select" id="genero" required>
+                                <option value="" selected disabled>Seleccionar...</option>
+                                <option value="Hombre">Hombre</option>
+                                <option value="Mujer">Mujer</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione un género</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="documento" class="form-label">Documento de Identidad</label>
+                            <input type="text" class="form-control" id="documento" minlength="5" required>
+                            <div class="invalid-feedback">El documento debe tener al menos 5 caracteres</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="sintomas" class="form-label">Síntomas</label>
+                            <input type="text" class="form-control" id="sintomas" required>
+                            <div class="invalid-feedback">Por favor describa los síntomas</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="gravedad" class="form-label">Nivel de Gravedad</label>
+                            <select class="form-select" id="gravedad" required>
+                                <option value="" selected disabled>Seleccionar...</option>
+                                <option value="Leve">Leve</option>
+                                <option value="Moderado">Moderado</option>
+                                <option value="Urgente">Urgente</option>
+                                <option value="Crítico">Crítico</option>
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione el nivel de gravedad</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="tratamiento" class="form-label">Tratamiento</label>
+                            <input type="text" class="form-control" id="tratamiento">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="medicamentos" class="form-label">Medicamentos</label>
+                            <input type="text" class="form-control" id="medicamentos">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="examenes" class="form-label">Exámenes</label>
+                        <select class="form-select" id="examenes" multiple>
+                            <option value="Hemograma">Hemograma</option>
+                            <option value="Radiografía">Radiografía</option>
+                            <option value="Tomografía">Tomografía</option>
+                            <option value="Electrocardiograma">Electrocardiograma</option>
+                            <option value="Ultrasonido">Ultrasonido</option>
+                            <option value="Análisis de Orina">Análisis de Orina</option>
+                        </select>
+                        <div class="form-text">Mantenga presionado Ctrl para seleccionar múltiples opciones</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Registrar Paciente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Patients Table -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-list me-2"></i>Pacientes Registrados</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="patientsTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Edad</th>
+                                <th>Género</th>
+                                <th>Documento</th>
+                                <th>Síntomas</th>
+                                <th>Gravedad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTableBody">
+                            <!-- Patients will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample data for demonstration
+        let pacientes = [
+            {
+                nombre: "Juan Pérez",
+                edad: 45,
+                genero: "Hombre",
+                documento: "12345678",
+                sintomas: "Dolor en el pecho, dificultad para respirar",
+                gravedad: "Crítico",
+                tratamiento: "Oxígeno, monitorización cardiaca",
+                medicamentos: "Aspirina, nitroglicerina",
+                examenes: ["Electrocardiograma", "Hemograma"]
+            },
+            {
+                nombre: "María González",
+                edad: 32,
+                genero: "Mujer",
+                documento: "87654321",
+                sintomas: "Fiebre alta, dolor de cabeza",
+                gravedad: "Urgente",
+                tratamiento: "Hidratación intravenosa",
+                medicamentos: "Paracetamol",
+                examenes: ["Hemograma", "Análisis de Orina"]
+            },
+            {
+                nombre: "Carlos López",
+                edad: 28,
+                genero: "Hombre",
+                documento: "56781234",
+                sintomas: "Dolor en brazo derecho",
+                gravedad: "Moderado",
+                tratamiento: "Inmovilización",
+                medicamentos: "Ibuprofeno",
+                examenes: ["Radiografía"]
+            },
+            {
+                nombre: "Ana Martínez",
+                edad: 19,
+                genero: "Mujer",
+                documento: "43218765",
+                sintomas: "Dolor de garganta, tos",
+                gravedad: "Leve",
+                tratamiento: "Reposo",
+                medicamentos: "Jarabe para la tos",
+                examenes: []
+            }
+        ];
+
+        // DOM elements
+        const loginContainer = document.getElementById('loginContainer');
+        const registerContainer = document.getElementById('registerContainer');
+        const mainContent = document.getElementById('mainContent');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const patientForm = document.getElementById('patientForm');
+        const patientsTableBody = document.getElementById('patientsTableBody');
+        const criticalAlert = document.getElementById('criticalAlert');
+        const totalPatientsElement = document.getElementById('totalPatients');
+        const criticalPatientsElement = document.getElementById('criticalPatients');
+        const urgentPatientsElement = document.getElementById('urgentPatients');
+        const mildPatientsElement = document.getElementById('mildPatients');
+
+        // Show login form by default
+        loginContainer.style.display = 'block';
+        registerContainer.style.display = 'none';
+        mainContent.style.display = 'none';
+
+        // Event listeners
+        showRegister.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginContainer.style.display = 'none';
+            registerContainer.style.display = 'block';
+        });
+
+        showLogin.addEventListener('click', function(e) {
+            e.preventDefault();
+            registerContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+        });
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Simple validation
+            if (password.length < 8) {
+                alert('La contraseña debe tener al menos 8 caracteres');
+                return;
+            }
+            
+            // For demo purposes, just show main content
+            loginContainer.style.display = 'none';
+            registerContainer.style.display = 'none';
+            mainContent.style.display = 'block';
+            
+            // Render patients table
+            renderPatientsTable();
+            updateStats();
+        });
+
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            // Validation
+            if (password !== confirmPassword) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+            
+            if (password.length < 8) {
+                alert('La contraseña debe tener al menos 8 caracteres');
+                return;
+            }
+            
+            // For demo purposes, just show login form
+            registerContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+            
+            // Clear form
+            registerForm.reset();
+        });
+
+        patientForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Get form values
+            const nombre = document.getElementById('nombre').value;
+            const edad = parseInt(document.getElementById('edad').value);
+            const genero = document.getElementById('genero').value;
+            const documento = document.getElementById('documento').value;
+            const sintomas = document.getElementById('sintomas').value;
+            const gravedad = document.getElementById('gravedad').value;
+            const tratamiento = document.getElementById('tratamiento').value;
+            const medicamentos = document.getElementById('medicamentos').value;
+            
+            // Get selected exams
+            const examenesSelect = document.getElementById('examenes');
+            const examenes = [];
+            for (let i = 0; i < examenesSelect.options.length; i++) {
+                if (examenesSelect.options[i].selected) {
+                    examenes.push(examenesSelect.options[i].value);
+                }
+            }
+            
+            // Create new patient object
+            const nuevoPaciente = {
+                nombre,
+                edad,
+                genero,
+                documento,
+                sintomas,
+                gravedad,
+                tratamiento,
+                medicamentos,
+                examenes
+            };
+            
+            // Add to patients array
+            pacientes.push(nuevoPaciente);
+            
+            // Sort patients by severity
+            sortPatientsBySeverity();
+            
+            // Render table
+            renderPatientsTable();
+            
+            // Update stats
+            updateStats();
+            
+            // Show alert if critical
+            if (gravedad === 'Crítico') {
+                showCriticalAlert();
+            }
+            
+            // Reset form
+            patientForm.reset();
+        });
+
+        // Form validation
+        function validateForm() {
+            let isValid = true;
+            
+            // Validate name
+            const nombre = document.getElementById('nombre');
+            if (nombre.value.trim() === '') {
+                nombre.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                nombre.classList.remove('is-invalid');
+            }
+            
+            // Validate age
+            const edad = document.getElementById('edad');
+            if (edad.value === '' || parseInt(edad.value) <= 0) {
+                edad.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                edad.classList.remove('is-invalid');
+            }
+            
+            // Validate gender
+            const genero = document.getElementById('genero');
+            if (genero.value === null || genero.value === '') {
+                genero.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                genero.classList.remove('is-invalid');
+            }
+            
+            // Validate document
+            const documento = document.getElementById('documento');
+            if (documento.value.trim().length < 5) {
+                documento.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                documento.classList.remove('is-invalid');
+            }
+            
+            // Validate symptoms
+            const sintomas = document.getElementById('sintomas');
+            if (sintomas.value.trim() === '') {
+                sintomas.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                sintomas.classList.remove('is-invalid');
+            }
+            
+            // Validate severity
+            const gravedad = document.getElementById('gravedad');
+            if (gravedad.value === null || gravedad.value === '') {
+                gravedad.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                gravedad.classList.remove('is-invalid');
+            }
+            
+            return isValid;
+        }
+
+        // Sort patients by severity
+        function sortPatientsBySeverity() {
+            const severityOrder = {
+                'Crítico': 0,
+                'Urgente': 1,
+                'Moderado': 2,
+                'Leve': 3
+            };
+            
+            pacientes.sort((a, b) => {
+                return severityOrder[a.gravedad] - severityOrder[b.gravedad];
+            });
+        }
+
+        // Render patients table
+        function renderPatientsTable() {
+            patientsTableBody.innerHTML = '';
+            
+            pacientes.forEach((paciente, index) => {
+                const row = document.createElement('tr');
+                
+                // Add class based on severity
+                switch(paciente.gravedad) {
+                    case 'Crítico':
+                        row.classList.add('paciente-critico');
+                        break;
+                    case 'Urgente':
+                        row.classList.add('paciente-urgente');
+                        break;
+                    case 'Moderado':
+                        row.classList.add('paciente-moderado');
+                        break;
+                    case 'Leve':
+                        row.classList.add('paciente-leve');
+                        break;
+                }
+                
+                // Create cells
+                const nombreCell = document.createElement('td');
+                nombreCell.textContent = paciente.nombre;
+                
+                const edadCell = document.createElement('td');
+                edadCell.textContent = paciente.edad;
+                
+                const generoCell = document.createElement('td');
+                generoCell.textContent = paciente.genero;
+                
+                const docCell = document.createElement('td');
+                docCell.textContent = paciente.documento;
+                
+                const sintomasCell = document.createElement('td');
+                sintomasCell.textContent = paciente.sintomas;
+                
+                const gravedadCell = document.createElement('td');
+                const gravedadBadge = document.createElement('span');
+                gravedadBadge.className = 'badge';
+                
+                switch(paciente.gravedad) {
+                    case 'Crítico':
+                        gravedadBadge.classList.add('badge-critico');
+                        break;
+                    case 'Urgente':
+                        gravedadBadge.classList.add('badge-urgente');
+                        break;
+                    case 'Moderado':
+                        gravedadBadge.classList.add('badge-moderado');
+                        break;
+                    case 'Leve':
+                        gravedadBadge.classList.add('badge-leve');
+                        break;
+                }
+                
+                gravedadBadge.textContent = paciente.gravedad;
+                gravedadCell.appendChild(gravedadBadge);
+                
+                const accionesCell = document.createElement('td');
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-sm btn-danger';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteBtn.addEventListener('click', () => deletePatient(index));
+                
+                const detailsBtn = document.createElement('button');
+                detailsBtn.className = 'btn btn-sm btn-info ms-2';
+                detailsBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
+                detailsBtn.addEventListener('click', () => showPatientDetails(index));
+                
+                accionesCell.appendChild(deleteBtn);
+                accionesCell.appendChild(detailsBtn);
+                
+                // Append cells to row
+                row.appendChild(nombreCell);
+                row.appendChild(edadCell);
+                row.appendChild(generoCell);
+                row.appendChild(docCell);
+                row.appendChild(sintomasCell);
+                row.appendChild(gravedadCell);
+                row.appendChild(accionesCell);
+                
+                // Append row to table
+                patientsTableBody.appendChild(row);
+            });
+        }
+
+        // Delete patient
+        function deletePatient(index) {
+            if (confirm('¿Está seguro que desea eliminar este paciente?')) {
+                pacientes.splice(index, 1);
+                renderPatientsTable();
+                updateStats();
+            }
+        }
+
+        // Show patient details
+        function showPatientDetails(index) {
+            const paciente = pacientes[index];
+            
+            let examenesText = paciente.examenes.length > 0 ? paciente.examenes.join(', ') : 'Ninguno';
+            
+            let details = `
+                <h5>${paciente.nombre}</h5>
+                <p><strong>Edad:</strong> ${paciente.edad}</p>
+                <p><strong>Género:</strong> ${paciente.genero}</p>
+                <p><strong>Documento:</strong> ${paciente.documento}</p>
+                <p><strong>Síntomas:</strong> ${paciente.sintomas}</p>
+                <p><strong>Gravedad:</strong> <span class="badge ${getSeverityBadgeClass(paciente.gravedad)}">${paciente.gravedad}</span></p>
+                <p><strong>Tratamiento:</strong> ${paciente.tratamiento || 'No especificado'}</p>
+                <p><strong>Medicamentos:</strong> ${paciente.medicamentos || 'No especificado'}</p>
+                <p><strong>Exámenes:</strong> ${examenesText}</p>
+            `;
+            
+            alert(details);
+        }
+
+        function getSeverityBadgeClass(severity) {
+            switch(severity) {
+                case 'Crítico': return 'badge-critico';
+                case 'Urgente': return 'badge-urgente';
+                case 'Moderado': return 'badge-moderado';
+                case 'Leve': return 'badge-leve';
+                default: return '';
+            }
+        }
+
+        // Show critical alert
+        function showCriticalAlert() {
+            criticalAlert.style.display = 'block';
+            
+            setTimeout(() => {
+                criticalAlert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Update stats
+        function updateStats() {
+            const total = pacientes.length;
+            const critical = pacientes.filter(p => p.gravedad === 'Crítico').length;
+            const urgent = pacientes.filter(p => p.gravedad === 'Urgente').length;
+            const moderate = pacientes.filter(p => p.gravedad === 'Moderado').length;
+            const mild = pacientes.filter(p => p.gravedad === 'Leve').length;
+            
+            totalPatientsElement.textContent = total;
+            criticalPatientsElement.textContent = critical;
+            urgentPatientsElement.textContent = urgent;
+            mildPatientsElement.textContent = mild;
+        }
+
+        // Initialize
+        sortPatientsBySeverity();
+    </script>
+</body>
+</html>

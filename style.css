@@ -1,0 +1,138 @@
+
+        :root {
+            --leve: #4CAF50;
+            --moderado: #FFC107;
+            --urgente: #FF9800;
+            --critico: #F44336;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: #3f51b5;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+        }
+        
+        .btn-primary:hover {
+            background-color: #303f9f;
+        }
+        
+        .gravedad-critico {
+            background-color: var(--critico);
+            color: white;
+        }
+        
+        .gravedad-urgente {
+            background-color: var(--urgente);
+            color: white;
+        }
+        
+        .gravedad-moderado {
+            background-color: var(--moderado);
+        }
+        
+        .gravedad-leve {
+            background-color: var(--leve);
+            color: white;
+        }
+        
+        .badge-critico {
+            background-color: var(--critico);
+        }
+        
+        .badge-urgente {
+            background-color: var(--urgente);
+        }
+        
+        .badge-moderado {
+            background-color: var(--moderado);
+        }
+        
+        .badge-leve {
+            background-color: var(--leve);
+        }
+        
+        .paciente-critico {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid var(--critico);
+        }
+        
+        .paciente-urgente {
+            background-color: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid var(--urgente);
+        }
+        
+        .paciente-moderado {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid var(--moderado);
+        }
+        
+        .paciente-leve {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--leve);
+        }
+        
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+        
+        .floating-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            from { right: -100%; }
+            to { right: 20px; }
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .stats-card .count {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stats-card .label {
+            font-size: 1rem;
+        }
+    
